@@ -30,19 +30,29 @@ column_names = c("ID", "date", "confirmed_cases", "confirmed_deaths", "country_n
 
 
 
-# Dataset from covid19 package
+#Dataset from covid19 package
+#Petter sin versjon
+# Crossgovsources_df2 <- covid19() %>%
+#   select("id","date","tests","confirmed","deaths","administrative_area_level_1","population") %>%
+#   rename_at(vars(c("id","date","confirmed","deaths","administrative_area_level_1","population")), ~ column_names) %>%
+#   replace(is.na(.),0) %>%
+#   mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))
+
+
+#Forslag fra Tonje - for ?? fikse litt mer p?? NAs. Usikker p?? hvordan det b??r l??ses
 Crossgovsources_df <- covid19() %>% 
   select("id","date","tests","confirmed","deaths","administrative_area_level_1","population") %>% 
-  rename_at(vars(c("id","date","confirmed","deaths","administrative_area_level_1","population")), ~ column_names) %>% 
-  replace(is.na(.),0) %>%  
+  rename_at(vars(c("id","date","confirmed","deaths","administrative_area_level_1","population")), ~ column_names) %>%
+  group_by(country_name) %>% 
+  do(na.locf2(.)) %>% #replace NA by previous accumulative value
+  ungroup()%>%
+  replace(is.na(.),0) %>% #replace NAs with not previous values by 0 
   mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))
 
 
 
 
-
-
-#Datasettet ECDC blir ikke oppdatert regelmessig, går fullstendig over til daglige oppdateringer 14 des, denne bør dermed ikke brukes
+#Datasettet ECDC blir ikke oppdatert regelmessig, g?r fullstendig over til daglige oppdateringer 14 des, denne b?r dermed ikke brukes
 
 
 #dataset from European central for disease control
