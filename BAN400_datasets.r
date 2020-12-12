@@ -28,27 +28,16 @@ library(stringr)
 column_names = c("ID", "date", "confirmed_cases", "confirmed_deaths", "country_name", "population")
 
 
+na.locf2 <- function(x) na.locf(x, na.rm = FALSE) #replace NA with previous value if exist
 
-
-#Dataset from covid19 package
-#Petter sin versjon
-# Crossgovsources_df2 <- covid19() %>%
-#   select("id","date","tests","confirmed","deaths","administrative_area_level_1","population") %>%
-#   rename_at(vars(c("id","date","confirmed","deaths","administrative_area_level_1","population")), ~ column_names) %>%
-#   replace(is.na(.),0) %>%
-#   mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))
-
-na.locf2 <- function(x) na.locf(x, na.rm = FALSE)
-
-#Forslag fra Tonje - for ?? fikse litt mer p?? NAs. Usikker p?? hvordan det b??r l??ses
 Crossgovsources_df <- covid19() %>% 
   select("id","date","tests","confirmed","deaths","administrative_area_level_1","population") %>% 
   rename_at(vars(c("id","date","confirmed","deaths","administrative_area_level_1","population")), ~ column_names) %>%
   group_by(country_name) %>% 
-  do(na.locf2(.)) %>% #replace NA by previous accumulative value
-  ungroup()%>%
+  do(na.locf2(.)) %>% #replace NA by previous cumulative value
   replace(is.na(.),0) %>% #replace NAs with not previous values by 0 
-  mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))
+  mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))%>%
+  ungroup()
 
 
 #Adding column "negative_daily_cases" and "negative_daily_deaths", holds the value 1 if daily_cases/daily_deaths are negative, 0 otherwise
@@ -56,25 +45,7 @@ Crossgovsources_df <- Crossgovsources_df %>% group_by(country_name) %>% mutate(n
 
 #Correction: changing negative daily_deaths and negative daily_cases to 0
 Crossgovsources_df <- Crossgovsources_df %>% 
-  mutate( daily_deaths = replace(daily_deaths , daily_deaths < 0, 0), daily_cases = replace(daily_deaths , daily_cases < 0, 0))
-
-
-#Datasettet ECDC blir ikke oppdatert regelmessig, g?r fullstendig over til daglige oppdateringer 14 des, denne b?r dermed ikke brukes
-
-
-#dataset from European central for disease control
-ECDC_df <-  read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv", na.strings = "", fileEncoding = "UTF-8-BOM") %>% 
-  select("countryterritoryCode","dateRep","cases","deaths","countriesAndTerritories","popData2019") %>% 
-  rename_at(vars(c("countryterritoryCode","dateRep","cases","deaths","countriesAndTerritories","popData2019")), ~column_names) 
-
-ECDC_df$ID <- as.character(ECDC_df$ID)
-ECDC_df$date <- as.Date(ECDC_df$date, tryFormats = "%d/%m/%Y")
-ECDC_df$country_name <- as.character(ECDC_df$country_name)
-
-ECDC_df <- ECDC_df %>% 
-  replace(is.na(.),0) %>%  
-  mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))
-
+  mutate( daily_deaths = replace(daily_deaths , daily_deaths < 0, 0), daily_cases = replace(daily_cases , daily_cases < 0, 0))
 
 
 #Dataset from John Hopkins 
@@ -100,7 +71,3 @@ JHD_df_full <- JHD_df_confirmed %>%
   mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))
 
 
-
-
-
-####### Finished retrieving datasets
