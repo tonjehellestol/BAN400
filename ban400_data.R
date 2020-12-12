@@ -18,14 +18,6 @@ library(forecast)
 library(zoo)
 library(stringr)
 
-Crossgovsources_df <- covid19()
-
-
-
-ECDC_df <- read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv", na.strings = "", fileEncoding = "UTF-8-BOM")
-
-JHU_df <- covid19.data()
-
 
 
 
