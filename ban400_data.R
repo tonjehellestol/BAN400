@@ -25,68 +25,68 @@ library(stringr)
 norwaydata <- read.csv("https://raw.githubusercontent.com/thohan88/covid19-nor-data/master/data/01_infected/msis/municipality_and_district.csv", na.strings = "", fileEncoding = "UTF-8-BOM")
 norwaydata$date <- as.Date(norwaydata$date)
 
-### Det er noen feil med data, kumulativ antall cases blir mindre i noen kommuner p?? enkelte datoer feks B??rum
-### Ved utregning av antall nye daglige tilfeller f??r jeg derfor negative tall, noe som ikke gir mening
-### Evt kan dette testes ved ?? se om data[x] > data[y] hvor x > y, evt sette data[x] == data[y] dersom f??rste statement er TRUE
-
 
 norway <- norwaydata %>% 
   select("date","kommune_name","fylke_name","cases") %>% 
-  group_by(kommune_name, date, fylke_name) %>% 
+  rename("country_name" = kommune_name) %>% 
+  group_by(country_name, date, fylke_name) %>% 
   summarise_at(vars(cases),             
                list(cases = sum)) %>% 
   ungroup() %>% 
-  group_by(kommune_name) %>% 
+  group_by(country_name) %>% 
   mutate(daily_cases = c(0,diff(cases)))
 
 
 
 
 
-###### start of function 
+graph_data <- function(df, country){
+  
+  
+  temp_df <- df %>% 
+    filter(country_name == country)
+  temp_df$average <- ma(temp_df$daily_cases, 7)
 
+  
+  #Creating graph  
+  graph_cases <- temp_df %>%
+    ggplot(aes(x=date)) +
+    geom_bar(aes(y=daily_cases, text = paste0("New Cases: ", daily_cases, "\nDate: ", date)), stat ="identity", colour = "#DD8888", fill = "#e74c4c", alpha = 0.4) +
+    geom_line(aes(y = average), size = 1.5, colour = "red", alpha = 0.6) +
+    labs (title = "Daily Cases of Covid19 In XXXXXX",
+          x = "Date",
+          y = "Daily Confirmed Cases") +
+    theme_hc() 
+  
+  
+  ## Creating font for the interactive tooltip
+  interactive_font = list(
+    family = "DM Sans",
+    size = 16,
+    color = "white"
+  )
+  
+  ## Creating the layout for the interactive tooltip
+  interactive_label = list(
+    bgcolor = "#595959",
+    bordercolor = "transparent",
+    font = interactive_font
+  )
+  
+  
+  
+  
+  ## Turning graph_cases to an interactive graph
+  interactive_plot <- ggplotly(graph_cases, tooltip = c("text")) %>% 
+    style(hoverlabel = interactive_label) %>% 
+    layout(font = interactive_font,
+           yaxis = list(fixedrange = TRUE)) %>% 
+    config(displayModeBar = FALSE)
+  
+  
+  return(interactive_plot)
+}
 
-
-selected_input <- norway %>% 
-  filter(kommune_name == "Oslo") %>% 
-  ungroup()
-
-
-
-selected_input$average <- ma(selected_input$daily_cases, 7) ## calculating moving averages over past week for each datapoint
-
-
-# Creating graph
-graph_cases = selected_input %>%
-  ggplot(aes(x=date)) +
-  geom_bar(aes(y=daily_cases, text = paste0("New Cases: ", daily_cases, "\nDate: ", date)), stat ="identity", colour = "#DD8888", fill = "#e74c4c", alpha = 0.4) +
-  geom_line(aes(y = average), size = 1.5, colour = "red", alpha = 0.6) +
-  labs (title = "Daily Cases of Covid19 In XXXXXX",
-        x = "Date",
-        y = "Daily Confirmed Cases") +
-  theme_hc() 
-
-## Creating font for the interactive tooltip
-interactive_font = list(
-  family = "DM Sans",
-  size = 16,
-  color = "white"
-)
-
-## Creating the layout for the interactive tooltip
-interactive_label = list(
-  bgcolor = "#595959",
-  bordercolor = "transparent",
-  font = interactive_font
-)
-
-
-## Turning graph_cases to an interactive graph
-ggplotly(graph_cases, tooltip = c("text")) %>% 
-  style(hoverlabel = interactive_label) %>% 
-  layout(font = interactive_font,
-         yaxis = list(fixedrange = TRUE)) %>% 
-  config(displayModeBar = FALSE)
 
 
 
