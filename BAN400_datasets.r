@@ -33,12 +33,12 @@ na.locf2 <- function(x) na.locf(x, na.rm = FALSE) #replace NA with previous valu
 Crossgovsources_df <- covid19() %>% 
   select("id","date","tests","confirmed","deaths","administrative_area_level_1","population") %>% 
   rename_at(vars(c("id","date","confirmed","deaths","administrative_area_level_1","population")), ~ column_names) %>%
+  filter(country_name != "Costa Atlantica",country_name != "Diamond Princess") %>% 
   group_by(country_name) %>% 
   do(na.locf2(.)) %>% #replace NA by previous cumulative value
   replace(is.na(.),0) %>% #replace NAs with not previous values by 0 
-  mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))%>%
-  ungroup()
-
+  mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths))) %>% 
+  ungroup() 
 
 #Adding column "negative_daily_cases" and "negative_daily_deaths", holds the value 1 if daily_cases/daily_deaths are negative, 0 otherwise
 Crossgovsources_df <- Crossgovsources_df %>% group_by(country_name) %>% mutate(negative_daily_cases = (ifelse( daily_cases < 0, 1, 0)), negativ_daily_deaths = (ifelse( daily_deaths < 0, 1, 0))) %>% ungroup()
@@ -46,27 +46,8 @@ Crossgovsources_df <- Crossgovsources_df %>% group_by(country_name) %>% mutate(n
 #Correction: changing negative daily_deaths and negative daily_cases to 0
 Crossgovsources_df <- Crossgovsources_df %>% 
   mutate( daily_deaths = replace(daily_deaths , daily_deaths < 0, 0), daily_cases = replace(daily_cases , daily_cases < 0, 0))
-<<<<<<< HEAD
-=======
 
 
-#Datasettet ECDC blir ikke oppdatert regelmessig, g?r fullstendig over til daglige oppdateringer 14 des, denne b?r dermed ikke brukes
-
-
-#dataset from European central for disease control
-ECDC_df <-  read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv", na.strings = "", fileEncoding = "UTF-8-BOM") %>% 
-  select("countryterritoryCode","dateRep","cases","deaths","countriesAndTerritories","popData2019") %>% 
-  rename_at(vars(c("countryterritoryCode","dateRep","cases","deaths","countriesAndTerritories","popData2019")), ~column_names) 
-
-ECDC_df$ID <- as.character(ECDC_df$ID)
-ECDC_df$date <- as.Date(ECDC_df$date, tryFormats = "%d/%m/%Y")
-ECDC_df$country_name <- as.character(ECDC_df$country_name)
-
-ECDC_df <- ECDC_df %>% 
-  replace(is.na(.),0) %>%  
-  mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))
-
->>>>>>> 8b73b51d080cee9daba22136f509784d0036b27c
 
 
 #Dataset from John Hopkins 
