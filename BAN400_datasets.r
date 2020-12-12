@@ -46,6 +46,27 @@ Crossgovsources_df <- Crossgovsources_df %>% group_by(country_name) %>% mutate(n
 #Correction: changing negative daily_deaths and negative daily_cases to 0
 Crossgovsources_df <- Crossgovsources_df %>% 
   mutate( daily_deaths = replace(daily_deaths , daily_deaths < 0, 0), daily_cases = replace(daily_cases , daily_cases < 0, 0))
+<<<<<<< HEAD
+=======
+
+
+#Datasettet ECDC blir ikke oppdatert regelmessig, g?r fullstendig over til daglige oppdateringer 14 des, denne b?r dermed ikke brukes
+
+
+#dataset from European central for disease control
+ECDC_df <-  read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv", na.strings = "", fileEncoding = "UTF-8-BOM") %>% 
+  select("countryterritoryCode","dateRep","cases","deaths","countriesAndTerritories","popData2019") %>% 
+  rename_at(vars(c("countryterritoryCode","dateRep","cases","deaths","countriesAndTerritories","popData2019")), ~column_names) 
+
+ECDC_df$ID <- as.character(ECDC_df$ID)
+ECDC_df$date <- as.Date(ECDC_df$date, tryFormats = "%d/%m/%Y")
+ECDC_df$country_name <- as.character(ECDC_df$country_name)
+
+ECDC_df <- ECDC_df %>% 
+  replace(is.na(.),0) %>%  
+  mutate(daily_cases = c(0,diff(confirmed_cases)), daily_deaths = c(0,diff(confirmed_deaths)))
+
+>>>>>>> 8b73b51d080cee9daba22136f509784d0036b27c
 
 
 #Dataset from John Hopkins 
