@@ -56,7 +56,7 @@ Crossgovsources_df <- Crossgovsources_df %>% group_by(country_name) %>% mutate(n
 
 #Correction: changing negative daily_deaths and negative daily_cases to 0
 Crossgovsources_df <- Crossgovsources_df %>% 
-  mutate( daily_deaths = replace(daily_deaths , daily_deaths < 0, 0), daily_cases = replace(daily_deaths , daily_cases < 0, 0))
+  mutate( daily_deaths = replace(daily_deaths , daily_deaths < 0, 0), daily_cases = replace(daily_cases , daily_cases < 0, 0))
 
 
 #Datasettet ECDC blir ikke oppdatert regelmessig, g?r fullstendig over til daglige oppdateringer 14 des, denne b?r dermed ikke brukes
