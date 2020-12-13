@@ -142,8 +142,7 @@ graph_data <- function(df, country){
     font = interactive_font
   )
   
-  
-  
+##
   
   ## Turning graph_cases to an interactive graph
   interactive_plot <- ggplotly(graph_cases, tooltip = c("text")) %>% 

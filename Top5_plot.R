@@ -20,7 +20,7 @@ library(stringr)
 library(gganimate)
 
 
-
+#aaa
 
 
 ### Finner top 10 kommuner og plotter graf av deres utvikling i ??r
