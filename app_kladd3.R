@@ -99,7 +99,7 @@ kommune <- norway %>% select("kommune_name")
 
 #Creating a dataset for the test status boxes in global and norway 
 
-tsglobal <- Crossgovsources_df %>% select("confirmed_deaths")
+tsglobal <- Crossgovsources_df %>% select("confirmed_cases", "confirmed_deaths", "country_name")
 
 
 
